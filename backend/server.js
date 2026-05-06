@@ -2,8 +2,10 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const path = require('path');
 
-dotenv.config();
+
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 var app = express(); // init express app
 
@@ -16,6 +18,7 @@ var taskRoutes = require('./routes/tasks');
 const userRoutes = require('./routes/users');
 const auth = require('./middleware/auth');
 const Task = require('./models/Task'); // model
+const User = require('./models/User');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
@@ -33,19 +36,35 @@ app.get('/api/dashboard', auth, async (req, res) => {
       taskQuery.assignedTo = userId;
     }
 
-    const tasks = await Task.find(taskQuery);
+    const tasks = await Task.find(taskQuery).populate('assignedTo', 'name');
     // console.log(tasks);
     
     const total = tasks.length;
-    const completed = tasks.filter(t => t.status === 'done').length;
-    const pending = total - completed;
+    const todo = tasks.filter(t => t.status === 'todo').length;
+    const inProgress = tasks.filter(t => t.status === 'in-progress').length;
+    const done = tasks.filter(t => t.status === 'done').length;
     const now = new Date();
     const overdue = tasks.filter(t => t.status !== 'done' && t.dueDate && new Date(t.dueDate) < now).length;
 
-    res.json({ total, completed, pending, overdue });
+    let tasksPerUser = {};
+    if (role === 'admin') {
+      tasks.forEach(t => {
+        if (t.assignedTo) {
+          tasksPerUser[t.assignedTo.name] = (tasksPerUser[t.assignedTo.name] || 0) + 1;
+        }
+      });
+    }
+
+    res.json({ total, statusCounts: { todo, inProgress, done }, overdue, tasksPerUser });
   } catch (err) {
     res.status(500).json({ error: 'Server error' });
   }
+});
+
+// Serve static frontend in production
+app.use(express.static(path.join(__dirname, '../frontend/dist')));
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
 });
 
 const PORT = process.env.PORT || 5000;

@@ -13,6 +13,7 @@ const Tasks = () => {
   const [description, setDescription] = useState('');
   const [project, setProject] = useState('');
   const [assignedTo, setAssignedTo] = useState('');
+  const [priority, setPriority] = useState('Medium');
   const [dueDate, setDueDate] = useState('');
 
   useEffect(() => {
@@ -55,11 +56,12 @@ const Tasks = () => {
     e.preventDefault();
     try {
       // send task data
-      await api.post('/tasks', { title, description, project, assignedTo, dueDate });
+      await api.post('/tasks', { title, description, project, assignedTo, priority, dueDate });
       setTitle('');
       setDescription('');
       setProject('');
       setAssignedTo('');
+      setPriority('Medium');
       setDueDate('');
       setShowForm(false);
       fetchTasks();
@@ -85,6 +87,12 @@ const Tasks = () => {
       default: 
         return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const getPriorityColor = (p) => {
+    if (p === 'High') return 'text-red-600 font-bold';
+    if (p === 'Medium') return 'text-yellow-600 font-semibold';
+    return 'text-green-600';
   };
 
   return (
@@ -123,8 +131,16 @@ const Tasks = () => {
               <select className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5" value={assignedTo} onChange={e => setAssignedTo(e.target.value)}>
                 <option value="">Unassigned</option>
                 {users.map(u => (
-                  <option key={u._id} value={u._id}>{u.username}</option>
+                  <option key={u._id} value={u._id}>{u.name} ({u.email})</option>
                 ))}
+              </select>
+            </div>
+            <div>
+              <label className="block mb-2 text-sm font-medium text-gray-900">Priority</label>
+              <select className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5" value={priority} onChange={e => setPriority(e.target.value)}>
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
               </select>
             </div>
             <div>
@@ -141,7 +157,7 @@ const Tasks = () => {
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project & Priority</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assigned To</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -155,10 +171,11 @@ const Tasks = () => {
                   <div className="text-sm text-gray-500">{task.description}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {task.project?.name || 'N/A'}
+                  <div className="mb-1">{task.project?.name || 'N/A'}</div>
+                  <div className={`text-xs ${getPriorityColor(task.priority)}`}>{task.priority} Priority</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {task.assignedTo?.username || 'Unassigned'}
+                  {task.assignedTo?.name || 'Unassigned'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'None'}

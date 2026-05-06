@@ -20,7 +20,7 @@ const Navbar = () => {
           <span className="self-center text-xl font-semibold whitespace-nowrap">Ethara Task Manager</span>
         </Link>
         <div className="flex items-center lg:order-2 space-x-4">
-          <span className="text-gray-600">Hi, {user.username} ({user.role})</span>
+          <span className="text-gray-600">Hi, {user.name} ({user.role})</span>
           <button onClick={handleLogout} className="text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-4 py-2">
             Logout
           </button>

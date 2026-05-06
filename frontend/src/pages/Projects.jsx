@@ -82,7 +82,7 @@ const Projects = () => {
               <label className="block mb-2 text-sm font-medium text-gray-900">Members (Ctrl/Cmd click to select multiple)</label>
               <select multiple className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5" onChange={handleMemberChange} value={selectedMembers}>
                 {users.map(u => (
-                  <option key={u._id} value={u._id}>{u.username}</option>
+                  <option key={u._id} value={u._id}>{u.name} ({u.email})</option>
                 ))}
               </select>
             </div>
